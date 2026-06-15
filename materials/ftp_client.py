@@ -14,18 +14,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Паттерны для имен файлов (из конфига)
-# Временные константы (используем 12200 вместо 12960 для 2025 года)
+# Паттерны для имен файлов
+# ВАЖНО: 12200 МГц файлы физически лежат в SRH1224, но имя файла содержит 12960
 FILE_PATTERNS = {
-    3000: "srh_I_{date}T{time}_{frequency}.fit",
-    6000: "srh_{date}T{time}_{frequency}_I.fit",
-    12200: "srh_{date}T{time}_{frequency}_I.fit"  # временно вместо 12960
+    3000: "srh_I_{date}T{time}_3000.fit",
+    6000: "srh_{date}T{time}_6000_I.fit",
+    12200: "srh_{date}T{time}_12960_I.fit",
 }
 
 BASE_URLS = {
     3000: "https://ftp.rao.istp.ac.ru/SRH/SRH0306/cleanMaps",
     6000: "https://ftp.rao.istp.ac.ru/SRH/SRH0612/cleanMaps",
-    12200: "https://ftp.rao.istp.ac.ru/SRH/SRH1224/cleanMaps"  # временно вместо 12960
+    12200: "https://ftp.rao.istp.ac.ru/SRH/SRH1224/cleanMaps",
 }
 
 
@@ -69,16 +69,15 @@ class FTPClient:
             date_str = self._format_date_3000(dt)
             time_str = self._format_time_3000(dt)
             filename = FILE_PATTERNS[3000].format(
-                date=date_str, time=time_str, frequency=frequency
+                date=date_str, time=time_str
             )
-            # Директория: BASE_URL/YYYYMMDD/ (да, для 3000 тоже YYYYMMDD в пути!)
             dir_date = dt.strftime("%Y%m%d")
             dir_url = urljoin(BASE_URLS[3000] + "/", f"{dir_date}/")
         else:
             date_str = self._format_date_other(dt)
             time_str = self._format_time_other(dt)
             filename = FILE_PATTERNS[frequency].format(
-                date=date_str, time=time_str, frequency=frequency
+                date=date_str, time=time_str
             )
             dir_url = urljoin(BASE_URLS[frequency] + "/", f"{date_str}/")
         
@@ -128,10 +127,11 @@ class FTPClient:
             logger.error(f"Ошибка при скачивании {url}: {e}")
             return None
     
-    def find_closest_file(self, frequency: int, target_dt: datetime, 
+    def find_closest_file(self, frequency: int, target_dt: datetime,
                          max_diff_sec: int = 180) -> Tuple[Optional[datetime], Optional[str]]:
         """
         Поиск ближайшего по времени файла на заданной частоте.
+        Парсит HTML-листинг директории за соответствующий день.
         
         Args:
             frequency: частота (3000, 6000, 12960)
@@ -141,46 +141,6 @@ class FTPClient:
         Returns:
             (datetime фактического файла, URL) или (None, None) если не найден
         """
-        # Пробуем несколько стратегий
-        
-        # Стратегия 1: Прямой URL по шаблону (если файл существует точно в это время)
-        direct_url = self.build_url(frequency, target_dt)
-        if self._check_file_exists(direct_url):
-            return target_dt, direct_url
-        
-        # Стратегия 2: Поиск в окрестности +/- max_diff_sec секунд
-        # Генерируем временные метки с шагом 2 минуты (типичный кадр СРГ)
-        step = 120  # 2 минуты в секундах
-        for offset in range(0, max_diff_sec + step, step):
-            # Пробуем +offset и -offset
-            for sign in [1, -1]:
-                if offset == 0 and sign == -1:
-                    continue  # уже проверили
-                    
-                dt_candidate = target_dt + timedelta(seconds=sign * offset)
-                candidate_url = self.build_url(frequency, dt_candidate)
-                
-                if self._check_file_exists(candidate_url):
-                    diff = abs((dt_candidate - target_dt).total_seconds())
-                    if diff <= max_diff_sec:
-                        return dt_candidate, candidate_url
-        
-        # Стратегия 3: Парсинг HTML директории (fallback)
-        return self._find_closest_file_fallback(frequency, target_dt, max_diff_sec)
-    
-    def _check_file_exists(self, url: str) -> bool:
-        """Проверка существования файла по URL (HEAD-запрос)."""
-        try:
-            response = self.session.head(url, timeout=10, allow_redirects=True)
-            return response.status_code == 200
-        except requests.exceptions.RequestException:
-            return False
-    
-    def _find_closest_file_fallback(self, frequency: int, target_dt: datetime, 
-                                   max_diff_sec: int) -> Tuple[Optional[datetime], Optional[str]]:
-        """
-        Fallback-стратегия: парсинг HTML директории.
-        """
         date_str = target_dt.strftime("%Y%m%d")
         dir_url = urljoin(BASE_URLS[frequency] + "/", f"{date_str}/")
         
@@ -188,11 +148,8 @@ class FTPClient:
             response = self.session.get(dir_url, timeout=30)
             response.raise_for_status()
             
-            # Декодируем HTML-сущности
             from urllib.parse import unquote
             html = response.text
-            
-            # Ищем все .fit файлы (учитываем кодирование %3A)
             files = re.findall(r'href="([^"]+\.fit)"', html)
             if not files:
                 return None, None
@@ -202,16 +159,14 @@ class FTPClient:
             best_dt = None
             
             for file in files:
-                # Декодируем URL
                 decoded_file = unquote(file)
                 dt = self._parse_datetime_from_filename(frequency, decoded_file)
                 if dt is None:
                     continue
-                
                 diff = abs((dt - target_dt).total_seconds())
                 if diff < best_diff:
                     best_diff = diff
-                    best_file = file  # оригинальный (кодированный) URL
+                    best_file = file
                     best_dt = dt
             
             if best_diff <= max_diff_sec:
@@ -236,8 +191,8 @@ class FTPClient:
                     year, month, day, hour, minute, second = map(int, match.groups())
                     return datetime(year, month, day, hour, minute, second)
             else:
-                # srh_20250101T000000_6000_I.fit
-                match = re.search(r'srh_(\d{8})T(\d{6})_(\d{4})_I\.fit', filename)
+                # srh_20250101T000000_6000_I.fit or srh_20250101T000000_12960_I.fit
+                match = re.search(r'srh_(\d{8})T(\d{6})_(\d{4,5})_I\.fit', filename)
                 if match:
                     date_str, time_str, freq = match.groups()
                     year, month, day = int(date_str[:4]), int(date_str[4:6]), int(date_str[6:8])
@@ -247,41 +202,76 @@ class FTPClient:
             logger.debug(f"Не удалось распарсить дату из {filename}: {e}")
         
         return None
-    
-    def find_triplet(self, target_dt: datetime, max_diff_sec: int = 180) -> Dict[int, Tuple[datetime, str]]:
+
+    def list_files(self, frequency: int, dt: datetime) -> List[Tuple[datetime, str]]:
         """
-        Поиск тройки файлов (3000, 6000, 12960 МГц) для заданного времени.
+        Получение списка всех .fit (I-поляризация) файлов на заданную дату.
+        Возвращает список (datetime, URL_encoded).
+        """
+        date_str = dt.strftime("%Y%m%d")
+        dir_url = urljoin(BASE_URLS[frequency] + "/", f"{date_str}/")
         
-        Args:
-            target_dt: целевое время (обычно для 3000 МГц)
-            max_diff_sec: максимальное отклонение для каждого файла
+        try:
+            response = self.session.get(dir_url, timeout=30)
+            response.raise_for_status()
             
-        Returns:
-            Словарь {частота: (datetime, URL)} или пустой словарь если не все найдены
+            from urllib.parse import unquote
+            html = response.text
+            files = re.findall(r'href="([^"]+\.fit)"', html)
+            
+            result = []
+            for file in files:
+                decoded = unquote(file)
+                dt_parsed = self._parse_datetime_from_filename(frequency, decoded)
+                if dt_parsed is not None:
+                    file_url = urljoin(dir_url, file)
+                    result.append((dt_parsed, file_url))
+            
+            result.sort(key=lambda x: x[0])
+            return result
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Ошибка при доступе к {dir_url}: {e}")
+            return []
+    
+    def find_triplet_by_3000_file(self, dt_3000: datetime, url_3000: str,
+                                   max_diff_sec: int = 180) -> Dict[int, Tuple[datetime, str]]:
         """
-        result = {}
+        Поиск тройки по известному файлу 3000 МГц.
+        Ищет 6000 и 12200 в окрестности dt_3000.
+        """
+        result = {3000: (dt_3000, url_3000)}
         
-        # Сначала ищем файл на 3000 МГц (целевой канал)
-        dt_3000, url_3000 = self.find_closest_file(3000, target_dt, max_diff_sec)
-        if dt_3000 is None:
-            logger.warning(f"Не найден файл 3000 МГц для {target_dt}")
-            return {}
-        result[3000] = (dt_3000, url_3000)
-        
-        # Для 6000 и 12200 ищем ближайшие к dt_3000 (не к target_dt!)
         for freq in [6000, 12200]:
             dt_freq, url_freq = self.find_closest_file(freq, dt_3000, max_diff_sec)
             if dt_freq is None:
-                logger.warning(f"Не найден файл {freq} МГц для времени {dt_3000}")
                 return {}
             result[freq] = (dt_freq, url_freq)
         
-        # Проверяем, что все три файла находятся в пределах max_diff_sec друг от друга
         times = [dt for dt, _ in result.values()]
-        max_actual_diff = max(abs((t1 - t2).total_seconds()) for t1 in times for t2 in times)
-        if max_actual_diff > max_diff_sec:
-            logger.warning(f"Тройка найдена, но max_diff={max_actual_diff} сек > {max_diff_sec}")
+        max_diff = max(abs((t1 - t2).total_seconds()) for t1 in times for t2 in times)
+        if max_diff > max_diff_sec:
             return {}
         
-        logger.info(f"Найдена тройка: 3000={dt_3000}, 6000={result[6000][0]}, 12960={result[12960][0]}")
         return result
+
+    def find_triplet(self, target_dt: datetime, max_diff_sec: int = 180) -> Dict[int, Tuple[datetime, str]]:
+        """
+        Поиск тройки файлов (3000, 6000, 12960 МГц) для заданного времени.
+        Перебирает все файлы дня на 3000 МГц и ищет совпадения.
+        """
+        files_3000 = self.list_files(3000, target_dt)
+        if not files_3000:
+            logger.warning(f"Нет файлов 3000 МГц на {target_dt.strftime('%Y%m%d')}")
+            return {}
+        
+        best = None
+        best_diff = float('inf')
+        for dt_3000, url_3000 in files_3000:
+            diff = abs((dt_3000 - target_dt).total_seconds())
+            if diff > best_diff:
+                continue
+            triplet = self.find_triplet_by_3000_file(dt_3000, url_3000, max_diff_sec)
+            if triplet:
+                return triplet
+        
+        return {}
