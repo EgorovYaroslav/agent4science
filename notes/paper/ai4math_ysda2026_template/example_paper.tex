@@ -1,0 +1,211 @@
+%%%%%%%% AI4Math-YSDA 2026 --- пример статьи для учебной конференции %%%%%%%%
+%
+% Шаблон основан на ICML 2026 (двухколоночный, times-like).
+% Русская локализация --- babel + T2A fontenc. Сборка:
+%
+%     pdflatex example_paper
+%     bibtex   example_paper
+%     pdflatex example_paper
+%     pdflatex example_paper
+%
+% В этом файле --- короткий сквозной пример, демонстрирующий:
+%   - title / authors / affiliation;
+%   - abstract;
+%   - секции, формулы (inline и display);
+%   - окружение theorem/definition;
+%   - таблицу, figure;
+%   - цитаты через \cite{};
+%   - правила подачи на учебную конференцию (в разделе 5).
+
+\documentclass{article}
+
+% ---- Локализация ----------------------------------------------------------
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}   % последний язык --- основной
+
+% ---- Служебные пакеты -----------------------------------------------------
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Отбираем стиль AI4Math-YSDA 2026
+\usepackage{ai4math_ysda2026}
+% Для preprint:
+% \usepackage[preprint]{ai4math_ysda2026}
+% Для камера-версии (после принятия):
+% \usepackage[accepted]{ai4math_ysda2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+% ---- Теоремные окружения --------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{theorem}{Теорема}[section]
+\newtheorem{lemma}[theorem]{Лемма}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Определение}
+
+% ---- Заголовок и short-title ----------------------------------------------
+\icmltitlerunning{Пример статьи для AI4Math-YSDA 2026}
+
+\begin{document}
+
+\twocolumn[
+  \icmltitle{Пример оформления работы \\
+             для учебной конференции AI4Math-YSDA 2026}
+
+  \icmlsetsymbol{equal}{*}
+
+  \begin{icmlauthorlist}
+    \icmlauthor{Иван Иванов}{shad}
+  \end{icmlauthorlist}
+
+  \icmlaffiliation{shad}{ШАД, Москва, Россия}
+
+  \icmlcorrespondingauthor{Иван Иванов}{ivan@example.com}
+
+  \icmlkeywords{AI4Math, MCP, Lean, автоформализация}
+
+  \vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}  % выводит подпись <<Под рецензией>>
+
+% ---- Аннотация ------------------------------------------------------------
+\begin{abstract}
+В работе кратко показана структура типового представления в шаблоне
+AI4Math-YSDA 2026: формулы, теоремы, таблицы и цитаты. Раздел~5
+содержит правила подачи на учебную конференцию курса.
+\end{abstract}
+
+% ---- Введение -------------------------------------------------------------
+\section{Введение}
+\label{sec:intro}
+
+Этот файл --- короткий пример. Он покажет базовую разметку, чтобы
+студент мог стартовать собственную статью за пять минут. Внутри:
+один раздел теории, одна таблица, один рисунок, две формулы, одно
+утверждение и блок <<как подать>> в конце.
+
+% ---- Формулы --------------------------------------------------------------
+\section{Формулы}
+
+\textbf{Inline.} Пусть $f : \mathbb{R}^n \to \mathbb{R}$ --- выпуклая
+и дифференцируемая; градиентный шаг с темпом $\eta > 0$ --- это
+$x_{k+1} = x_k - \eta \nabla f(x_k)$.
+
+\textbf{Display.} Классическое неравенство Коши--Шварца:
+\begin{equation}
+  \bigl|\langle u, v\rangle\bigr| \;\leq\; \|u\|\cdot\|v\|,\qquad u,v\in H.
+  \label{eq:cauchy}
+\end{equation}
+
+Внутри доказательства удобно ссылаться на~\eqref{eq:cauchy} через
+\texttt{\textbackslash eqref}.
+
+% ---- Теорема и определение ------------------------------------------------
+\begin{definition}[Онтологическая тройка]
+\emph{Онтологическая тройка} --- упорядоченная тройка
+$\langle s, p, o \rangle$, где $s, o$ --- сущности, $p$ --- типизированное
+отношение.
+\end{definition}
+
+\begin{theorem}[Разложение графа знаний]
+\label{thm:kg}
+Любой конечный граф знаний $\mathcal{K}$ представим как мультимножество
+$\{\langle s_i, p_i, o_i\rangle\}_{i=1}^{N}$, где $N$ --- число рёбер.
+\end{theorem}
+
+\begin{proof}
+Индукция по $N$. Каждое ребро графа знаний по определению типизировано.
+Остаётся собрать их все в мультимножество; порядок игнорируем.
+\end{proof}
+
+% ---- Таблица --------------------------------------------------------------
+\section{Таблица}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Уровень эксп. & Конфигов & Ср. время \\
+\midrule
+dry           & 1  & 1 с    \\
+smoke         & 1  & 20 с   \\
+sweep         & 6  & 3 мин  \\
+full          & 3  & 30 мин \\
+\bottomrule
+\end{tabular}
+\caption{Сравнение уровней эксперимента (см. ноутбук
+\texttt{tests.ipynb} курса).}
+\label{tab:levels}
+\end{table}
+
+\Cref{tab:levels} показывает, как уровни растут в стоимости.
+
+% ---- Рисунок --------------------------------------------------------------
+\section{Рисунок}
+
+Картинки кладите в папку \texttt{figures/} рядом с \texttt{example\_paper.tex}.
+PDF/PNG/JPG --- любые. PNG в 150--300 dpi достаточно для подачи.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/sweep_lr.png}
+\caption{Val-loss в зависимости от \texttt{lr} в sweep из
+  \S\ref{tab:levels}: log-парабола с минимумом около $\eta = 0{,}05$
+  (seed = 42, demo-данные).}
+\label{fig:sweep}
+\end{figure}
+
+\Cref{fig:sweep} --- стандартный пример: одна картинка, одна
+подпись, ссылка через \texttt{\textbackslash Cref}. Если рисунок
+сложный (несколько panel), используйте \texttt{subcaption}
+(подключён в шаблоне).
+
+% ---- Правила подачи -------------------------------------------------------
+\section{Как подать на учебную конференцию AI4Math-YSDA 2026}
+
+\begin{enumerate}
+  \item \textbf{Регистрация на OpenReview.}
+    Откройте \url{https://openreview.net}, создайте профиль с
+    академическим адресом. Укажите affiliation (ШАД / ваш университет).
+  \item \textbf{Оформление работы.} Используйте этот шаблон.
+    Заменяйте текст в \texttt{example\_paper.tex} на свой.
+    \texttt{\textbackslash usepackage\{ai4math\_ysda2026\}} --- не трогайте.
+  \item \textbf{Сдача статьи.} На странице учебного venue (ссылка
+    будет разослана преподавателем до 1~мая 2026~г.) --- нажмите
+    <<New Submission>>, загрузите собранный PDF. Deadline:
+    \textbf{5~мая 2026}.
+  \item \textbf{Ожидайте рецензий.} Ваша работа попадёт в bidding
+    (6~мая), затем в assignment (7~мая). С 7~по 12~мая --- период
+    рецензирования. Параллельно вы сами пишете 3~рецензии (см. день~7
+    курса).
+  \item \textbf{Rebuttal.} 12--13~мая --- период ответа авторам.
+    Отвечайте по существу, не переделывая статью.
+  \item \textbf{Финальные оценки.} 14~мая --- обсуждение reviewers~+
+    AC. 15~мая --- нотификации.
+\end{enumerate}
+
+\textbf{Ключевые термины.} Area Chair (AC) --- ответственный за
+модерацию рецензий и принятие решения; Desk Reject --- немедленный
+отказ до рецензирования за формальные нарушения; PC --- Programme
+Chair, утверждает решения AC.
+
+% ---- Библиография ---------------------------------------------------------
+\section{Библиография}
+
+Цитирование: \cite{mcp2024} для ссылки в скобках,
+\citet{mcp2024} для <<работа~\cite{mcp2024} показывает, что \ldots>>.
+
+\bibliography{example_paper}
+\bibliographystyle{ai4math_ysda2026}
+
+\end{document}
