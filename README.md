@@ -24,6 +24,7 @@
 - [Воспроизведение по этапам](#воспроизведение-по-этапам)
 - [Гипотезы (H1–H9)](#гипотезы-h1h9)
 - [Зависимости](#зависимости)
+- [Виртуальное окружение](#виртуальное-окружение)
 - [Данные и API](#данные-и-api)
 - [Адаптация для нового исследования](#адаптация-для-нового-исследования)
 - [Автор](#автор)
@@ -91,15 +92,27 @@ npm install -g opencode-ai
 brew install anomalyco/tap/opencode
 ```
 
-### 3. Установить зависимости Python
+### 3. Установить uv и venv
 
 ```bash
-pip install -r requirements.txt
+# Установить uv (если ещё нет)
+curl -fsSL https://astral.sh/uv/install.sh | bash
+```
+
+```bash
+# Создать виртуальное окружение и установить зависимости
+uv venv
+source .venv/bin/activate   # Linux/macOS
+# .venv\Scripts\activate    # Windows
+uv pip install -r requirements.txt
 ```
 
 ### 4. Запустить opencode как web-клиент
 
 ```bash
+# Активировать виртуальное окружение (если не активировано)
+source .venv/bin/activate
+
 # Запустить веб-сервер opencode в корне проекта
 cd /path/to/agent4science
 opencode web --port 4096
@@ -116,6 +129,9 @@ OPENCODE_SERVER_PASSWORD=mysecret opencode web --hostname 0.0.0.0 --port 4096
 ### 5. Запустить эксперимент
 
 ```bash
+# Активировать виртуальное окружение
+source .venv/bin/activate
+
 # Проверка самосогласованности (H1) + основной эксперимент (H2–H9)
 python3 experiment.py --seed 42 --n-samples 1000 --max-diff-sec 180
 
@@ -179,6 +195,19 @@ git checkout experiment-v1
 | H7 | Распределения меток однородны | ❌ Ok rate: 54%→40%→16%, p ≈ 0 |
 | H8 | Сезонная стабильность | ❌ 37–100%, p = 3.6e-28 |
 | H9 | Модель > majority baseline | ✅ p ≈ 0 для обоих каналов |
+
+---
+
+## Виртуальное окружение
+
+```bash
+uv venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
+```
+
+Все команды запуска эксперимента, компиляции статьи и работы opencode
+предполагают активированное виртуальное окружение (`.venv`).
 
 ---
 
