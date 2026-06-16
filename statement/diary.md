@@ -190,3 +190,24 @@ Response:
 Модель f_{3000} не обобщается на другие частоты с практической точностью. Согласованность с 6000 МГц = 67.1% (нужно ≥90%), с 12200 МГц = 54.2% (нужно ≥85%). Причина: дрейф распределения — на 12200 МГц модель предсказывает "Bad" в 84% случаев (vs 54% на 3000). При этом модель хорошо обобщается для "Bad"-класса (91.9% совпадений 3000↔12200), но плохо для "Ok" (22.6%).
 
 **Файлы:** `experiment.py`, `results/agreement_table.csv`, `logs/main_20260615_153520.jsonl`, `experiment/plots/` (6 графиков)
+
+## [2026-06-16 04:20] Этап 7. Написание статьи (LaTeX)
+
+**Контекст:** На основе statement/ (LIT.md, HYPOTHESIS.md, TZ.md, diary.md, STATUS.md) и результатов эксперимента написана статья на LaTeX для конференции AI4Math-YSDA 2026.
+
+**Структура статьи:**
+1. Introduction — постановка задачи, gap analysis
+2. Related Work — литературный обзор (инструменты СРГ, классификация, ML в солнечной физике)
+3. Methodology — данные, модель, гипотезы H1–H9
+4. Results — H1 самосогласованность, H2–H3 согласованность, H4 стратификация, H5 уверенность, H6 Δt, H7 сдвиг распределения, H8 сезонность, H9 baseline
+5. Discussion — интерпретация асимметрии классов, причины низкой согласованности
+6. Conclusion — 5 ключевых выводов, практическая рекомендация
+
+**Технические детали:**
+- Язык: английский (основной), шаблон AI4Math-YSDA 2026 (ICML-based)
+- 6 figure: agreement_bar, agreement_by_class, confidence_boxplot, agreement_vs_deltat, distribution_by_channel, agreement_by_month
+- 1 таблица: data summary
+- 17 библиографических источников
+- Компиляция: tectonic (standalone), успешно, 279 KiB
+
+**Файлы:** `notes/paper/ai4math_ysda2026_template/example_paper.tex`, `notes/paper/ai4math_ysda2026_template/example_paper.bib`, `notes/paper/ai4math_ysda2026_template/example_paper.pdf`, `notes/paper/ai4math_ysda2026_template/figures/`

@@ -1,7 +1,7 @@
 # STATUS.md
 
 ## Текущий этап
-Этап 5. Эксперимент выполнен
+Этап 7. Написание статьи (LaTeX) — завершён
 
 ## Результаты эксперимента (N=1000 триплетов, full year 2025)
 
@@ -62,12 +62,19 @@
 - [x] Проведён полный эксперимент N=1000 (full year, stratified по месяцам)
 - [x] Сгенерированы 6 графиков в experiment/plots/
 - [x] Таблица результатов в results/agreement_table.csv
+- [x] Написана статья на LaTeX (example_paper.tex) — 8 секций, 6 figure
+- [x] Обновлена библиография (17 источников в example_paper.bib)
+- [x] Статья скомпилирована в PDF (tectonic, 279 KiB)
 
 ## Артефакты
 - `experiment.py` — скрипт эксперимента
 - `results/agreement_table.csv` — таблица всех метрик по гипотезам
 - `logs/main_20260615_153520.jsonl` — 3000 записей (1000 триплетов × 3 канала)
 - `experiment/plots/` — 6 графиков (agreement_bar, distribution_by_channel, confidence_boxplot, agreement_by_class, agreement_vs_deltat, agreement_by_month)
+- `notes/paper/ai4math_ysda2026_template/example_paper.tex` — статья (LaTeX, ~330 строк)
+- `notes/paper/ai4math_ysda2026_template/example_paper.bib` — библиография (17 статей)
+- `notes/paper/ai4math_ysda2026_template/example_paper.pdf` — скомпилированный PDF (279 KiB)
+- `notes/paper/ai4math_ysda2026_template/figures/` — 6 PNG-графиков для статьи
 
 ## Проблемы/блокировки
 нет
