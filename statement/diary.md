@@ -211,3 +211,16 @@ Response:
 - Компиляция: tectonic (standalone), успешно, 279 KiB
 
 **Файлы:** `notes/paper/ai4math_ysda2026_template/example_paper.tex`, `notes/paper/ai4math_ysda2026_template/example_paper.bib`, `notes/paper/ai4math_ysda2026_template/example_paper.pdf`, `notes/paper/ai4math_ysda2026_template/figures/`
+
+## [2026-06-16 04:20] README.md — документация проекта
+
+**Контекст:** По запросу пользователя создан README.md с инструкциями по клонированию, установке opencode, запуску web-клиента и воспроизведению всех этапов.
+
+**Содержание:**
+- Структура проекта
+- Быстрый старт: clone → install opencode → web client → experiment → compile paper
+- Таблица git-тегов с привязкой к этапам
+- Сводка результатов гипотез H1–H9
+- Зависимости, данные и API
+
+**Файлы:** `README.md`

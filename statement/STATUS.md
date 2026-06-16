@@ -65,6 +65,7 @@
 - [x] Написана статья на LaTeX (example_paper.tex) — 8 секций, 6 figure
 - [x] Обновлена библиография (17 источников в example_paper.bib)
 - [x] Статья скомпилирована в PDF (tectonic, 279 KiB)
+- [x] Создан README.md — установка opencode, web-клиент, воспроизведение по тегам
 
 ## Артефакты
 - `experiment.py` — скрипт эксперимента
