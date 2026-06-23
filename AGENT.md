@@ -143,7 +143,7 @@ git tag snapshot_$(date +%Y%m%d_%H%M%S)
 
 ---
 
-## 5. Цикл работы (от литературы до отчёта)
+## 5. Цикл работы (от литературы до PDF)
 
 ### Этап 1. Работа с литературой
 
@@ -213,16 +213,35 @@ git tag snapshot_$(date +%Y%m%d_%H%M%S)
 3. Заполнить `example_paper.tex` по структуре шаблона
 4. Обновить `example_paper.bib`
 
+### Этап 8. Компиляция статьи
+
+**Вход:** `notes/paper/ai4math_ysda2026_template/example_paper.tex`
+**Выход:** `notes/paper/ai4math_ysda2026_template/example_paper.pdf`
+
+**Linux / macOS:**
+```bash
+cd notes/paper/ai4math_ysda2026_template
+pdflatex -interaction=nonstopmode -halt-on-error example_paper.tex
+```
+
+**Windows (через Overleaf, рекомендуется):**
+- Не устанавливать LaTeX локально
+- Загрузить папку `notes/paper/ai4math_ysda2026_template/` в Overleaf
+- Нажать Recompile — PDF готов
+
+**Важно:** Этот этап выполняет человек, а не агент. Агент не должен запускать компиляцию без явной команды.
+
 ---
 
 ## 6. Образ результата
 
-По окончании работы должен быть готов **один главный файл**:
+По окончании работы должны быть готовы:
 
-1. `notes/paper/ai4math_ysda2026_template/example_paper.tex` — статья на LaTeX, готовая к компиляции.
+1. `notes/paper/ai4math_ysda2026_template/example_paper.tex` — статья на LaTeX
+2. `notes/paper/ai4math_ysda2026_template/example_paper.pdf` — скомпилированная статья (после Этапа 8)
 
 **Плюс** папка с графиками:
-2. `notes/paper/ai4math_ysda2026_template/figures/` — изображения, подключенные в статью.
+3. `notes/paper/ai4math_ysda2026_template/figures/` — изображения, подключенные в статью.
 
 **Источники:** только локальные:
 - `statement/`
@@ -337,6 +356,7 @@ git tag snapshot_$(date +%Y%m%d_%H%M%S)
 - [ ] Через MCP-инструменты получены: explore_data, explore_temporal, compute_metrics, generate_plots, get_h1_summary
 - [ ] `experiment/plots/` — 6 графиков (agreement_bar, distribution_by_channel, confidence_boxplot, agreement_by_class, agreement_vs_deltat, agreement_by_month)
 - [ ] `notes/paper/ai4math_ysda2026_template/example_paper.tex` — заполненная статья
+- [ ] `notes/paper/ai4math_ysda2026_template/example_paper.pdf` — скомпилированная статья
 - [ ] Все утверждения с цифрами — со ссылкой на источник
 
 ---

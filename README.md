@@ -49,6 +49,8 @@
 
 ## Быстрый старт
 
+### Linux / macOS
+
 ```bash
 # 1. Клонировать
 git clone https://github.com/EgorovYaroslav/agent4science.git
@@ -65,6 +67,24 @@ uv venv && source .venv/bin/activate && uv pip install -r requirements.txt
 opencode
 ```
 
+### Windows (opencode Desktop)
+
+1. **Скачать opencode Desktop** — перейти на https://opencode.ai/download, скачать установщик для Windows (.exe или .msi)
+2. **Установить** — запустить установщик, следовать инструкциям
+3. **Клонировать репозиторий**:
+   ```powershell
+   git clone https://github.com/EgorovYaroslav/agent4science.git
+   cd agent4science
+   ```
+4. **Установить Python 3.10+** — скачать с https://www.python.org/downloads/, при установке отметить «Add Python to PATH»
+5. **Создать виртуальное окружение**:
+   ```powershell
+   python -m venv .venv
+   .venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+6. **Запустить opencode Desktop** — открыть приложение, открыть папку проекта (`agent4science`), в чате написать `следуй инструкциям из AGENT.md`
+
 Агент прочитает `AGENT.md` и `statement/MOTIVATION.md`, затем через MCP-инструменты изучит данные, вычислит метрики H1–H9 и сгенерирует 6 графиков.
 
 **Эксперимент не запускается заново** — данные уже собраны в `logs/`. MCP-сервер (`tools/experiment_mcp.py`) читает логи и предоставляет 5 инструментов вместо реальных API-запросов (~1 мин вместо 73 мин).
@@ -79,13 +99,32 @@ opencode
 | `generate_plots(output_dir?)` | 6 графиков: agreement_bar, distribution_by_channel, confidence_boxplot, agreement_by_class, agreement_vs_deltat, agreement_by_month |
 | `get_h1_summary()` | H1 самосогласованность (S_self, CI) |
 
-### Компиляция статьи
+---
+
+## Этап 8. Компиляция статьи
+
+### Linux / macOS (локально)
 
 ```bash
+# Вариант A — Tectonic (самый простой, не требует LaTeX)
 curl -fsSL https://github.com/tectonic-typesetting/tectonic/releases/download/\
 tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz | tar -xz
 ./tectonic -X compile notes/paper/ai4math_ysda2026_template/example_paper.tex
+
+# Вариант B — pdflatex
+pdflatex -interaction=nonstopmode -halt-on-error example_paper.tex
 ```
+
+### Windows (рекомендуется Overleaf)
+
+На Windows **не рекомендуется** устанавливать LaTeX локально. Вместо этого:
+
+1. Загрузить папку `notes/paper/ai4math_ysda2026_template/` в **Overleaf** (https://www.overleaf.com)
+2. Overleaf автоматически распознает `ai4math_ysda2026.sty` и `example_paper.bib`
+3. Нажать «Recompile» — PDF будет готов через несколько секунд
+4. Все графики из `figures/` подключатся автоматически
+
+Если нужно компилировать локально на Windows — установить MiKTeX (https://miktex.org/) или TeX Live (https://tug.org/texlive/), затем запустить `pdflatex`.
 
 ---
 
