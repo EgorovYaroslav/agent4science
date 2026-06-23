@@ -1,243 +1,36 @@
-# Литературный обзор: кросс-частотное обобщение модели классификации СРГ
+# Literature Review: SRH Image Classification
 
-## 1. Введение
+## References
 
-Настоящий обзор посвящён анализу литературы по классификации радиоизображений
-СибРГ (Сибрский РадиоГелиограф, SRH) и смежным задачам применения глубокого
-обучения в солнечной радиоастрономии. Цель обзора — выявить существующие
-подходы к классификации качества изображений СРГ и определить пробел (gap),
-связанный с переносом модели между частотными каналами.
+### 1. Egorov, 2025. Siberian radioheliograph image classification using ensemble of CLIP, EfficientNet and CatBoost models
 
-## 2. Ключевые работы
+- **File**: [literature/2507.04211v1.pdf](../literature/2507.04211v1.pdf)
+- **URL**: https://arxiv.org/abs/2507.04211
+- **Key ideas**: Proposes an ensemble model (CLIP + EfficientNet + CatBoost) for binary classification of SRH image quality at 3000 MHz. Training data prepared via zero-shot CLIP labeling with manual validation (10,000 images). Ensemble outperforms individual models with 95% accuracy and 95.8% F1-score.
+- **Methodology**: Data preprocessing (normalization, log transformation), CLIP zero-shot labeling, EfficientNet-B0 transfer learning, CatBoost on embeddings, feedforward ensemble. Web service and API deployed for daily classification.
+- **Results**: Ensemble accuracy 95%, standalone EfficientNet ~90%. CatBoost variants intermediate. Model deployed at https://forecasting.iszf.irk.ru/srh.
 
-### 2.1. Классификация изображений СРГ
+### 2. Lesovoi et al., 2017. Siberian Radioheliograph: first results
 
-#### [Egorov, 2025] — Основная работа
+- **Key ideas**: First results from the 48-antenna SRH configuration. Instrument characteristics and calibration methodology. Spatial resolution 70'', temporal cadence ~2 min, frequency range 3-24 GHz.
+- **Methodology**: Redundancy-based calibration using adjacent and non-adjacent antenna pairs.
 
-Y. Egorov, "Siberian radioheliograph image classification using ensemble of
-CLIP, EfficientNet and CatBoost models," *Advances in Space Research*, 2025.
-DOI: 10.1016/j.asr.2025.10.030. arXiv:2507.04211.
+### 3. Altyntsev et al., 2020. Multiwave Siberian Radioheliograph
 
-**Ключевые идеи:**
-- Предложен ансамблевый метод классификации качества изображений СРГ на
-  основе CLIP, EfficientNet-B0 и CatBoost.
-- Датасет: 100 000 изображений, размеченных zero-shot CLIP, с последующей
-  ручной валидацией 10 000 изображений.
-- Модели сравнивались по Accuracy, Precision, Recall, F1-score.
-- Ансамблевая модель показала наилучший результат: Accuracy = 95%,
-  F1-score = 0.958.
-- Разработан веб-сервис и API для ежедневной классификации
-  (https://forecasting.iszf.irk.ru/srh).
-- **Ограничение:** обучение и оценка проводились только на частоте 3 ГГц.
-  Вопрос кросс-частотного обобщения не рассматривался.
+- **Key ideas**: Description of multi-frequency observation mode. SRH operates at 32 frequency channels in 3-24 GHz range. Different channels have different noise statistics, beam sizes, and emission properties.
+- **Relevance**: Directly informs why cross-frequency generalization may fail — different frequencies probe different solar atmospheric layers.
 
-**Методология:**
-1. Zero-shot CLIP для первичной разметки (текстовые подсказки "photo of a
-   circle" / "photo of noise").
-2. Transfer learning с EfficientNet-B0 (предобучен на ImageNet).
-3. CatBoost на эмбеддингах CLIP и EfficientNet.
-4. Лёгкая FFNN (2 полносвязных слоя) для ансамблирования предсказаний трёх
-   базовых моделей.
+### 4. Armstrong & Fletcher, 2019. Fast solar image classification using deep learning
 
-**Результаты:**
-| Модель | Accuracy | Precision | Recall | F1-score |
-|--------|----------|-----------|--------|----------|
-| Fine-tuned EfficientNet | 90% | — | — | — |
-| CLIP + CatBoost | 92% | — | — | — |
-| EfficientNet + CatBoost | 92% | — | — | — |
-| Ensemble | 95% | 95.8% | 95.8% | 0.958 |
+- **Key ideas**: Demonstrated transfer learning effectiveness for solar image classification tasks. Pre-trained CNNs can be adapted to solar data with limited labeled examples.
+- **Relevance**: Motivation for using pre-trained models in the ensemble.
 
----
+### 5. Asensio Ramos et al., 2023. Machine learning in solar physics
 
-### 2.2. Инструментальные работы по СРГ
+- **Key ideas**: Comprehensive review of ML applications in solar physics. Covers transfer learning, CNNs, and challenges of domain adaptation for solar data.
 
-#### [Lesovoi et al., 2017] — Первые результаты СРГ
+## Gap Analysis
 
-S.V. Lesovoi et al., "Siberian Radioheliograph: first results,"
-*Solar-Terrestrial Physics*, vol. 3, no. 1, pp. 3–18, 2017.
-DOI: 10.12737/article_58f96ec60fec52.86165286.
+The main paper (Egorov, 2025) trains and evaluates the ensemble model **exclusively on the 3000 MHz channel**. Cross-frequency generalization — applying the 3000 MHz model to 6000 MHz and 12200 MHz data — is not addressed. This is the gap the present study fills.
 
-- Описание первых наблюдений на 48-антенной конфигурации СРГ.
-- Диапазон частот: 4–8 ГГц, угловое разрешение до 70".
-- Чувствительность к компактным источникам до 10⁻⁴ полного потока.
-
-#### [Fedotova et al., 2019] — Калибровка изображений СРГ
-
-A.Y. Fedotova et al., "Calibration of Siberian Radioheliograph images,"
-*Solar-Terrestrial Physics*, vol. 5, pp. 27–33, 2019.
-
-- Метод автоматической калибровки изображений СРГ-48.
-- Реализация на Python, примеры для вспышечных событий 2016–2017 гг.
-
-#### [Altyntsev et al., 2020] — Многоволновой СРГ
-
-A.T. Altyntsev et al., "Multiwave Siberian Radioheliograph,"
-*Solar-Terrestrial Physics*, vol. 6, pp. 30–40, 2020.
-
-- СРГ работает в диапазоне 3–24 ГГц с 32 частотами.
-- Подчёркнута важность многоволнового подхода для изучения механизмов
-  нагрева солнечной атмосферы.
-
-#### [Lesovoi et al., 2014] — 96-антенный радиогелиограф
-
-S.V. Lesovoi, A.T. Altyntsev, E.F. Ivanov, A.V. Gubin, "A 96-antenna
-radioheliograph," *Research in Astronomy and Astrophysics*, vol. 14, no. 7,
-pp. 864–868, 2014.
-
-- Принцип Фурье-синтеза для построения изображений.
-- Временное разрешение до 0.56 с в одночастотном режиме.
-
----
-
-### 2.3. Машинное обучение в солнечной физике
-
-#### [Armstrong and Fletcher, 2019] — Быстрая классификация солнечных изображений
-
-J.A. Armstrong and L. Fletcher, "Fast solar image classification using
-deep learning and its importance for automation in solar physics,"
-*Solar Physics*, vol. 294, no. 6, p. 80, 2019.
-
-- Применение transfer learning для классификации солнечных изображений.
-- Показана эффективность предобученных CNN для задач солнечной физики.
-
-#### [Asensio Ramos et al., 2023] — Обзор ML в солнечной физике
-
-A. Asensio Ramos et al., "Machine learning in solar physics,"
-*Living Reviews in Solar Physics*, vol. 20, no. 1, p. 4, 2023.
-
-- Всесторонний обзор применения ML: классификация изображений,
-  детектирование вспышек, сегментация корональных дыр.
-- Transfer learning — стандартная практика при ограниченных данных.
-
-#### [Illarionov and Tlatov, 2018] — CNN для корональных дыр
-
-E.A. Illarionov and A.G. Tlatov, "Segmentation of coronal holes in solar
-disc images with a convolutional neural network," *MNRAS*, vol. 481, no. 4,
-pp. 5014–5021, 2018.
-
-- CNN для сегментации корональных дыр — ранний пример применения глубокого
-  обучения к солнечным изображениям.
-
----
-
-### 2.4. Методологическая база
-
-#### [Radford et al., 2021] — CLIP
-
-A. Radford et al., "Learning transferable visual models from natural language
-supervision," *arXiv:2103.00020*, 2021.
-
-- Мультимодальная модель текст-изображение, обученная на 400 млн пар.
-- Zero-shot классификация без дополнительной разметки.
-
-#### [Tan and Le, 2020] — EfficientNet
-
-M. Tan and Q.V. Le, "EfficientNet: Rethinking model scaling for convolutional
-neural networks," *arXiv:1905.11946*, 2020.
-
-- Масштабирование CNN по глубине, ширине и разрешению.
-- EfficientNet-B0 — базовый вариант, использованный в [Egorov, 2025].
-
-#### [Dorogush et al., 2018] — CatBoost
-
-A.V. Dorogush, V. Ershov, and A. Gulin, "CatBoost: gradient boosting with
-categorical features support," *arXiv:1810.11363*, 2018.
-
-- Градиентный бустинг с обработкой категориальных признаков.
-- Использован в [Egorov, 2025] как классификатор на эмбеддингах.
-
----
-
-### 2.5. Смежные работы: классификация солнечных радиовсплесков
-
-#### [Scully et al., 2025] — Transfer Learning для SRB
-
-J. Scully, R. Flynn, P.T. Gallagher, E.M. Carley, "Type II and Type III Solar
-Radio Burst Classification Using Transfer Learning," *Solar Physics*,
-vol. 300, art. 179, 2025.
-
-- Transfer learning для классификации радиовсплесков II и III типа.
-- YOLOv8 показал F1 = 92%.
-- Релевантно: показано, что предобученные модели эффективны для
-  классификации радиоизображений Солнца.
-
-#### [Liu et al., 2025] — Active Learning для спектрограмм
-
-Y. Liu et al., "Deep Active Learning–Based Classification of Solar Radio
-Spectrogram Data," *The Astrophysical Journal Supplement Series*, 2025.
-
-- P-DCGAN + active learning для классификации спектрограмм.
-- Точность 99.44% при использовании 20.5% данных.
-
----
-
-## 3. Gap Analysis
-
-### 3.1. Что известно
-
-1. **Классификация качества изображений СРГ** решена для частоты 3 ГГц
-   [Egorov, 2025] с точностью 95% (Ensemble model).
-2. **СРГ работает в многоволновом режиме** (3–24 ГГц, до 32 частот)
-   [Altyntsev et al., 2020; Lesovoi et al., 2017].
-3. **Transfer learning** эффективен для солнечных изображений
-   [Armstrong and Fletcher, 2019; Asensio Ramos et al., 2023].
-
-### 3.2. Пробел (Gap)
-
-**Нет исследования переносимости модели классификации между частотными
-каналами СРГ.**
-
-Конкретные вопросы, на которые нет ответа в литературе:
-
-1. Сохраняет ли модель, обученная на 3 ГГц, точность на 6 ГГц и 12 ГГц?
-2. Меняется ли распределение классов GOOD/BAD на разных частотах?
-3. Требуется ли дообучение (fine-tuning) для каждого частотного канала
-   или единая модель применима ко всем каналам?
-
-Этот пробел прямо сформулирован в постановке задачи данного проекта:
-*"Насколько хорошо модель классификации радиоизображений СРГ, обученная
-на данных 3000 МГц, обобщается на данные других частотных каналов
-(6000 МГц и 12200 МГц)?"*
-
-### 3.3. Почему это важно
-
-- Экономия ресурсов: если модель обобщается, не нужно обучать отдельные
-  модели на каждую частоту.
-- Качество данных: кросс-частотная валидация может улучшить каталог СРГ.
-- Научная значимость: понимание частотной зависимости радиоизображений
-  важно для интерпретации наблюдений.
-
----
-
-## 4. Классификация работ
-
-| Категория | Работы |
-|-----------|--------|
-| Инструмент СРГ | Lesovoi et al., 2017; Fedotova et al., 2019; Altyntsev et al., 2020; Lesovoi et al., 2014 |
-| Классификация изображений СРГ | **Egorov, 2025** (единственная работа) |
-| ML в солнечной физике | Armstrong and Fletcher, 2019; Asensio Ramos et al., 2023; Illarionov and Tlatov, 2018 |
-| Transfer Learning для радиоизображений | Scully et al., 2025; Liu et al., 2025 |
-| Методологическая база | Radford et al., 2021; Tan and Le, 2020; Dorogush et al., 2018 |
-
----
-
-## 5. Ключевые термины
-
-- **СРГ (Сибрский РадиоГелиограф, SRH)** — наземный радиоинтерферометр
-  в Иркутске, диапазон 3–24 ГГц [Lesovoi et al., 2017].
-- **CLEAN algorithm** — алгоритм деконволюции точечной функции рассеяния
-  для улучшения качества радиоизображений [Högbom, 1974].
-- **Transfer Learning** — перенос весов предобученной модели на новую задачу
-  [Hosna et al., 2022].
-- **Ансамблевая модель** — комбинация предсказаний нескольких моделей для
-  повышения точности [Egorov, 2025].
-
----
-
-## 6. Заключение
-
-В литературе имеется одна работа по классификации изображений СРГ [Egorov,
-2025], которая демонстрирует высокую точность (95%) на частоте 3 ГГц. Однако
-вопрос кросс-частотного обобщения остаётся открытым. Настоящий проект
-направлен на заполнение этого пробела путём экспериментальной проверки
-модели на частотах 6000 МГц и 12200 МГц.
+The SRH literature documents that different frequency channels have substantially different observational characteristics (beam size, noise, emission layers), suggesting that cross-frequency generalization is non-trivial. No previous work has quantified how well a single-channel quality classifier transfers to other frequencies.

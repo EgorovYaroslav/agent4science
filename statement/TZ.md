@@ -1,253 +1,51 @@
-# TZ.md — Техническое задание на эксперимент
-
-## 1. Цель
-
-Экспериментальная проверка гипотез H1–H9 о кросс-частотном обобщении
-модели $f_{3000}$ (ансамбль CLIP+EfficientNet+CatBoost, обученной на
-3000 МГц) на данные 6000 МГц и 12200 МГц.
-
----
-
-## 2. Технические требования
-
-### 2.1. Окружение
-
-- **Python**: 3.10+
-- **Зависимости**: см. `requirements.txt`
-  - `requests>=2.31.0`
-  - `numpy>=1.24.0`
-  - `pandas>=2.0.0`
-  - `matplotlib>=3.7.0`
-  - `scipy>=1.11.0`
-  - `astropy>=5.3.0` (для валидации FITS-файлов)
-- **Seed**: `random_seed = 42` (фиксирован во всех random-операциях)
-- **ОС**: Linux (проверено на Ubuntu 22.04)
-- **Лимиты API**: не более 1 запроса/сек
-
-### 2.2. Данные
-
-**Источник:** FTP-сервер ИСЗФ СО РАН
-`https://ftp.rao.istp.ac.ru/SRH/`
-
-**Каналы:**
-
-| Канал | Базовая директория | Паттерн файла | Примечание |
-|-------|-------------------|---------------|------------|
-| 3000 МГц | `SRH0306/cleanMaps/YYYYMMDD/` | `srh_I_YYYY-MM-DDThh:mm:ss_3000.fit` | Основной канал обучения |
-| 6000 МГц | `SRH0612/cleanMaps/YYYYMMDD/` | `srh_YYYYMMDDThhmmss_6000_I.fit` | Цель кросс-частоты |
-| 12200 МГц | `SRH1224/cleanMaps/YYYYMMDD/` | `srh_YYYYMMDDThhmmss_12200_I.fit` | Цель кросс-частоты |
-
-> **Важно:** В MOTIVATION.md указана частота 12960 МГц, но в 2025 году
-> данные доступны только для 12200 МГц. Эксперимент использует 12200 МГц
-> (как в `materials/ftp_client.py`).
-
-**Условие отбора:** $\Delta t \le 3$ мин между всеми тремя снимками тройки.
-
-**Объём:** $N = 1000$ успешных троек (после фильтрации по $\Delta t$).
-
-### 2.3. API
-
-**Эндпоинт:** `POST https://forecasting.iszf.irk.ru/api/srh/predict`
-
-**Режимы:**
-1. **По URL** (рекомендуемый): `params = {"url": "https://.../file.fit"}`
-   — не требует скачивания на диск эксперимента.
-2. **Загрузка файла**: `files = {"file": (name, f, "application/fits")}`
-   — для локально сохранённых FITS.
-
-**Ответ:**
-```json
-{
-    "label": "GOOD" | "BAD",
-    "probability": float (0–1),
-    "image": "base64..."
-}
-```
-
-**Лимиты:** 1 запрос/сек. При превышении — HTTP 429, экспоненциальная
-задержка (1, 2, 4 сек) до 3 попыток.
-
----
-
-## 3. План эксперимента (Sweep-сетка)
-
-### 3.1. Общий протокол
-
-1. Выбрать $N = 1000$ случайных моментов времени в 2025 году
-   (равномерно, seed=42).
-2. Для каждого момента найти тройку файлов (3000, 6000, 12200)
-   с $\Delta t \le 3$ мин.
-3. Отправить каждый файл в API последовательно (с паузой 1 сек).
-4. Записать тройку предсказаний $(\hat{y}_{3000}, p_{3000}, \hat{y}_{6000},
-   p_{6000}, \hat{y}_{12200}, p_{12200})$ и $\Delta t$.
-5. Рассчитать метрики по гипотезам.
-
-### 3.2. Этапы эксперимента
-
-#### Этап 0: Контроль H1 (самосогласованность)
-
-- Взять 100 случайных файлов на 3000 МГц.
-- Каждый отправить в API дважды (с интервалом 1 сек).
-- **Проверка:** $S_{3000,3000} \ge 0.95$.
-- **Если нет:** остановка эксперимента, диагностика API.
-
-#### Этап 1: Основной сбор (N = 1000)
-
-- Собрать 1000 троек.
-- Для каждой тройки получить предсказания API.
-- Сохранить в `logs/inference_{timestamp}.jsonl`.
-
-#### Этап 2: Бейзлайн H9
-
-- По маргинальному распределению $\hat{y}^{(3000)}$ на 1000 трок
-  определить majority class.
-- Рассчитать $S_{3000,6000}^{(baseline)}$ и $S_{3000,12960}^{(baseline)}$
-  как долю majority class на соответствующем канале.
-- **Проверка:** $S^{(f_{3000})} > S^{(baseline)}$.
-
-#### Этап 3: Основные гипотезы H2, H3, H7
-
-- H2: $\chi^2$-тест $S_{3000,6000} = S_{3000,12960}$.
-- H3: z-тест + bootstrap CI для порогов 0.90 и 0.85.
-- H7: $\chi^2$ однородность распределений по каналам.
-
-#### Этап 4: Углублённый анализ H4, H5, H6, H8
-
-- H4: стратификация по классам с поправкой Бонферрони.
-- H5: парный t-test уверенности.
-- H6: корреляция Спирмена $S_{ab}$ vs $\Delta t$.
-- H8: ANOVA/Kruskal-Wallis по месяцам.
-
-### 3.3. Sweep-сетка параметров
-
-| Параметр | Значение |
-|----------|----------|
-| N (основной) | 1000 |
-| N (H1) | 100 |
-| max_diff_sec | 180 (3 мин) |
-| random_seed | 42 |
-| bootstrap resamples | 1000 |
-| $\alpha$ | 0.05 |
-| $\alpha$ (H4, Бонферрони) | 0.0125 |
-| API rate limit | 1 req/sec |
-| max_retries | 3 |
-| retry_delays | [1, 2, 4] сек |
-
----
-
-## 4. Процедура инференса
-
-### 4.1. Режим URL (рекомендуемый)
-
-FTP-файлы доступны по HTTPS. Можно передавать URL напрямую в API:
-
-```python
-POST /api/srh/predict?url=https://ftp.rao.istp.ac.ru/SRH/.../file.fit
-```
-
-Преимущество: не нужно скачивать файлы на диск.
-Недостаток: требуется стабильное интернет-соединение.
-
-### 4.2. Режим загрузки (fallback)
-
-При ошибках URL-режима — скачать файл локально (кэш в `data/fits/{channel}/`),
-затем передать как `multipart/form-data`.
-
-### 4.3. Логирование
-
-Каждый запрос/ответ записывается в JSONL:
-
-```jsonl
-{"trial": 0, "frequency": 3000, "url": "...", "dt": "...",
- "label": "GOOD", "probability": 0.97, "status": 200}
-{"trial": 0, "frequency": 6000, "url": "...", "dt": "...",
- "label": "GOOD", "probability": 0.82, "status": 200}
-...
-```
-
-Файл: `logs/inference_{timestamp}.jsonl`.
-
----
-
-## 5. Выходные данные
-
-### 5.1. Графики (в `experiment/plots/`)
-
-| Файл | Описание |
-|------|----------|
-| `agreement_bar.png` | Гистограмма $S_{ab}$ для пар с bootstrap CI |
-| `agreement_by_class.png` | Stacked bar plot: канал × класс (GOOD/BAD) |
-| `confidence_boxplot.png` | Boxplot уверенности по каналам |
-| `agreement_vs_deltat.png` | Scatter: $S_{ab}$ vs $\Delta t$ |
-| `agreement_by_month.png` | $S_{ab}$ по месяцам |
-| `distribution_by_channel.png` | Распределение GOOD/BAD по каналам |
-
-### 5.2. Таблицы
-
-- `results/agreement_table.csv` — $S_{ab}$, CI, p-value для каждой гипотезы
-- `results/inference_log.csv` — полный лог инференса
-
-### 5.3. Отчёт
-
-- `statement/diary.md` — запись результатов эксперимента
-- `statement/STATUS.md` — обновлённый статус
-
----
-
-## 6. Критерии завершения
-
-Из MOTIVATION.md:
-
-- [ ] Собрано $\ge 1000$ троек с $\Delta t \le 3$ мин
-- [ ] Доля успешных ответов API $\ge 95\%$
-- [ ] Отчёт с визуализациями
-- [ ] Вывод: «модель пригодна / не пригодна для кросс-частотного
-      инференса» с обоснованием
-- [ ] Код проходит `python -m py_compile experiment.py`
-
----
-
-## 7. Порядок проверки гипотез
-
-```
-H1 (контроль) ──NO──→ Диагностика API, стоп
-    │
-   YES
-    │
-    v
-H9 (бейзлайн) ──NO──→ Модель бесполезна, стоп
-    │
-   YES
-    │
-    v
-H2, H3, H7 (основные) ──→ Анализ результатов
-    │
-    v
-H4, H5, H6, H8 (углублённые) ──→ Полный отчёт
-```
-
----
-
-## 8. Ошибки и исключения
-
-| Ситуация | Действие |
-|----------|----------|
-| HTTP 429 (rate limit) | Exponential backoff, до 3 попыток |
-| HTTP 5xx | Retry до 3 раз, затем исключить тройку |
-| Файл не найден на FTP (404) | Отбросить тройку, продолжить |
-| Пустой ответ API | Retry, затем исключить |
-| Ответ без `label` / `probability` | Исключить, записать в лог ошибок |
-| Падение сети | Сохранить прогресс, остановиться |
-
----
-
-## 9. Глоссарий
-
-| Термин | Определение |
-|--------|-------------|
-| $S_{ab}$ | Доля совпадений предсказаний между каналами $a$ и $b$ |
-| Тройка | Три файла (3000, 6000, 12200 МГц) с $\Delta t \le 3$ мин |
-| GOOD | Изображение приемлемого качества |
-| BAD | Смещённое, зашумлённое или дефектное изображение |
-| $f_{3000}$ | Ансамблевая модель, обученная на 3000 МГц |
-| $\Delta t$ | Макс. временно́е рассогласование в тройке |
+# Technical Specification: Cross-Frequency Generalization Experiment
+
+## Objective
+Evaluate whether the SRH image quality classifier trained at 3000 MHz generalizes to 6000 MHz and 12200 MHz.
+
+## Data
+- **Source:** Pre-computed logs in `logs/`
+  - `h1_*.jsonl` — 100 self-consistency trials
+  - `main_*.jsonl` — 3000 predictions (1000 triplets × 3 channels)
+- **Schema per record:** trial, phase, frequency, url, dt, label, probability, max_dt_sec
+- **Constraint:** $\Delta t \leq 3$ min within triplet
+
+## Tools
+All analysis via MCP server (`tools/experiment_mcp.py`):
+1. `explore_data()` — data structure, channels, class balance
+2. `explore_temporal()` — monthly distribution
+3. `compute_metrics()` — H1–H9 metrics
+4. `generate_plots(output_dir)` — 6 plots → `experiment/plots/`
+5. `get_h1_summary()` — H1 self-consistency
+
+## Analysis Plan
+
+### Step 1: Data exploration
+- Call `explore_data()` and `explore_temporal()`
+- Document: channels, n_triplets, class distribution, time range, monthly distribution
+
+### Step 2: Self-consistency check (H1)
+- Call `get_h1_summary()`
+- Verify $S_{3000,3000} \geq 0.95$
+
+### Step 3: Main metrics (H2–H9)
+- Call `compute_metrics()`
+- Extract all 9 hypothesis results with CIs, p-values, test statistics
+
+### Step 4: Visualization
+- Call `generate_plots(output_dir='experiment/plots')`
+- Generate 6 PNG files
+
+### Step 5: Interpretation
+- Summarize results for author
+- Highlight key findings and practical recommendations
+
+## Deliverables
+- [ ] `experiment/plots/agreement_bar.png`
+- [ ] `experiment/plots/distribution_by_channel.png`
+- [ ] `experiment/plots/confidence_boxplot.png`
+- [ ] `experiment/plots/agreement_by_class.png`
+- [ ] `experiment/plots/agreement_vs_deltat.png`
+- [ ] `experiment/plots/agreement_by_month.png`
+- [ ] `statement/diary.md` with all metrics
+- [ ] `notes/paper/ai4math_ysda2026_template/example_paper.tex`

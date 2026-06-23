@@ -58,7 +58,7 @@ trained to classify image quality of the Siberian Radioheliograph (SRH) at
 retraining.  Using 1000 temporally aligned triplets ($\Delta t \leq 3$~min)
 sampled across the full year 2025, we measure prediction agreement between
 frequency channels.  The agreement with 6000~MHz is 67.1\% (95\%~CI:
-64.2--69.8\%) and with 12200~MHz is 54.2\% (95\%~CI: 51.1--57.2\%),
+64.1--69.8\%) and with 12200~MHz is 54.2\% (95\%~CI: 51.2--57.4\%),
 both far below the 90\% practical usability threshold.  We find a strong
 asymmetry: the model generalizes well for bad-quality images (79.8\% and
 91.9\% agreement for 6000 and 12200~MHz) but poorly for good-quality images
@@ -250,8 +250,8 @@ images.  All subsequent results are therefore reliable.
 \label{sec:h2h3}
 
 Figure~\ref{fig:agreement_bar} shows the main result.  Agreement at
-6000~MHz is $S = 0.671$ (95\%~CI: 0.642--0.698), and at 12200~MHz is
-$S = 0.542$ (95\%~CI: 0.511--0.572).  The $\chi^2$ test for H2 rejects
+6000~MHz is $S = 0.671$ (95\%~CI: 0.641--0.698), and at 12200~MHz is
+$S = 0.542$ (95\%~CI: 0.512--0.574).  The $\chi^2$ test for H2 rejects
 equality of proportions ($\chi^2_1 = 34.86$, $p = 3.5\times10^{-9}$):
 agreement depends significantly on the target frequency.
 
@@ -312,7 +312,7 @@ unseen frequencies.
 \label{sec:h6}
 
 Spearman correlation between the temporal offset $\Delta t$ and
-agreement is negligible: $\rho = 0.056$ ($p = 0.079$) for
+agreement is negligible: $\rho = 0.056$ ($p = 0.078$) for
 3000--6000~MHz and $\rho = 0.024$ ($p = 0.447$) for 3000--12200~MHz.
 Within $\pm3$~min, the exact time difference does not measurably affect
 prediction consistency.  Figure~\ref{fig:deltat} confirms the flat
@@ -331,11 +331,11 @@ visible; moving averages (dashed lines) are flat.}
 
 The marginal distribution of predicted labels shifts dramatically with
 frequency.  At 3000~MHz, 54.4\% of images are classified as \emph{Ok};
-this drops to 39.9\% at 6000~MHz and to 16.0\% at 1220~MHz.
+this drops to 39.9\% at 6000~MHz and to 16.0\% at 12200~MHz.
 Figure~\ref{fig:distribution} visualizes this shift.  The $\chi^2$
 homogeneity test rejects the null of identical distributions
 ($\chi^2_2 = 323.5$, $p = 5.8\times10^{-71}$).  This is the primary
-mechanism behind the low cross-frequency agreement: on higher
+mechanism behind the low cross-frequency agreement: at higher
 frequencies, the model overwhelmingly predicts \emph{Bad}, inflating
 apparent agreement for the \emph{Bad} class while collapsing
 \emph{Ok}-class agreement.
