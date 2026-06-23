@@ -1,8 +1,10 @@
 {
-  "mcpServers": {
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
     "srh-experiment": {
-      "command": "python3",
-      "args": ["tools/experiment_mcp.py"]
+      "type": "local",
+      "enabled": true,
+      "command": ["./Sci-Hub-MCP-Server/.venv/bin/python", "./tools/experiment_mcp.py"]
     }
   }
 }

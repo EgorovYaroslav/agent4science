@@ -23,12 +23,17 @@ KEEP_DIRS = {
     'materials',
     'notes',
     'skills',
+    'tools',
+    'logs',
+    '.venv',
 }
 
 KEEP_FILES = {
     'AGENT.md',
     'clear.py',
     'README.md',
+    'opencode.json',
+    'requirements.txt',
 }
 
 

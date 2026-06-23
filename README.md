@@ -104,6 +104,7 @@ curl -fsSL https://astral.sh/uv/install.sh | bash
 uv venv
 source .venv/bin/activate   # Linux/macOS
 # .venv\Scripts\activate    # Windows
+# Если ошибка, запустить команду Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 uv pip install -r requirements.txt
 ```
 
