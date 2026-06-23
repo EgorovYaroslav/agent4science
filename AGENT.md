@@ -49,7 +49,7 @@ final_project/
 ├── tools/
 │   └── experiment_mcp.py  # MCP-сервер с 5 инструментами для данных эксперимента
 │
-├── skills/  # папка с навыками
+├── .opencode/skills/      # скиллы opencode (загружаются автоматически)
 │
 └── statement/            # Вертикаль постановки и логирование
     ├── AGENT.md          # этот файл (контракт)
@@ -432,17 +432,17 @@ git tag snapshot_$(date '+%Y%m%d_%H%M%S')
 
 ## 13. Доступные скиллы (skills/)
 
-Ты имеешь доступ к следующим паттернам работы. Полная документация — в папке `skills/`.
+Ты имеешь доступ к следующим паттернам работы. Полная документация — в папке `.opencode/skills/`.
 
 | Скилл | Файл | Когда использовать |
 |-------|------|-------------------|
-| **latex** | `skills/latex.md` | Научные статьи, теоремы, доказательства, таблицы, pdflatex-компиляция |
-| **python** | `skills/python.md` | Скрипты, эксперименты, обработка данных, тесты, venv-дисциплина |
-| **literature** | `skills/literature.md` | Обзор литературы: web_search → pdf_download → анализ → review.md |
-| **debug-loop** | `skills/debug-loop.md` | Дисциплина отладки: write→run→observe→fix для любого кода |
-| **markdown** | `skills/markdown.md` | Документация, README, diary.md, STATUS.md, обзоры |
+| **latex** | `.opencode/skills/latex/SKILL.md` | Научные статьи, теоремы, доказательства, таблицы, pdflatex-компиляция |
+| **python** | `.opencode/skills/python/SKILL.md` | Скрипты, эксперименты, обработка данных, тесты, venv-дисциплина |
+| **literature** | `.opencode/skills/literature/SKILL.md` | Обзор литературы: web_search → pdf_download → анализ → review.md |
+| **debug-loop** | `.opencode/skills/debug-loop/SKILL.md` | Дисциплина отладки: write→run→observe→fix для любого кода |
+| **markdown** | `.opencode/skills/markdown/SKILL.md` | Документация, README, diary.md, STATUS.md, обзоры |
 
-**Правило:** перед началом задачи соответствующего типа — кратко освежи в памяти соответствующий скилл из `skills/`.
+**Правило:** перед началом задачи соответствующего типа — кратко освежи в памяти соответствующий скилл.
 
 **Комбинации:**
 - Статья = `latex` + `markdown` (черновики)

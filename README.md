@@ -40,6 +40,7 @@
 │       ├── example_paper.bib  # Библиография (17 источников)
 │       ├── example_paper.pdf  # Скомпилированный PDF
 │       └── figures/           # Графики для статьи
+├── .opencode/skills/          # Скиллы opencode (6 шт.)
 └── literature/
     └── 2507.04211v1.pdf       # Исходная статья Egorov, 2025
 ```
