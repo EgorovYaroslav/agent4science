@@ -115,31 +115,30 @@ source .venv/bin/activate
 
 # Запустить веб-сервер opencode в корне проекта
 cd /path/to/agent4science
-opencode web --port 4096
+opencode web --port 4099
 
-# Открыть в браузере: http://localhost:4096
+# Открыть в браузере: http://localhost:4099
 ```
 
 Опционально — с паролем для сетевого доступа:
 
 ```bash
-OPENCODE_SERVER_PASSWORD=mysecret opencode web --hostname 0.0.0.0 --port 4096
+OPENCODE_SERVER_PASSWORD=mysecret opencode web --hostname 0.0.0.0 --port 4099
 ```
 
-### 5. Запустить эксперимент
+### 5. Запустить opencode
 
 ```bash
 # Активировать виртуальное окружение
 source .venv/bin/activate
 
-# Проверка самосогласованности (H1) + основной эксперимент (H2–H9)
-python3 experiment.py --seed 42 --n-samples 1000 --max-diff-sec 180
-
-# Пропустить H1, если уже пройден
-python3 experiment.py --skip-h1 --n-samples 1000 --max-diff-sec 180
+# Запустить opencode
+opencode
 ```
 
-Эксперимент выполняет ~3000 запросов к API (1 req/s), ожидаемое время ~73 мин.
+Агент прочитает `AGENT.md` и `statement/MOTIVATION.md`, затем через MCP-инструменты изучит данные, сформулирует гипотезы, вычислит метрики H1–H9 и сгенерирует графики.
+
+Эксперимент **не запускается** — данные уже собраны в `logs/`. MCP-сервер (`tools/experiment_mcp.py`) читает логи и предоставляет агенту 5 инструментов: `explore_data`, `explore_temporal`, `compute_metrics`, `generate_plots`, `get_h1_summary`. Это занимает ~1 мин вместо 73 мин API-запросов.
 
 ### 6. Скомпилировать статью
 
@@ -166,6 +165,7 @@ tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-gnu.tar.gz \
 | `snapshot_20250615_100002` | 3. Гипотезы | H1–H9: формулировка, метод проверки, порядок | 08:05 | ~2 мин (на основе M.0–M.9) |
 | `snapshot_20250615_100003` | 4. ТЗ | TZ.md: требования, sweep-сетка, спецификация вывода | 08:07 | ~2 мин |
 | `experiment-v1` | 5–6. Эксперимент | experiment.py, отладка ftp_client, 4 прогона по ~73 мин (3000 запросов API), фикс label mapping и стратификации | 15:36 | **7 ч 29 мин** (08:07→15:36) |
+| *(MCP-поток)* | 5–6. Эксперимент | MCP-сервер читает предсобранные логи `logs/*.jsonl`, вычисляет метрики H1–H9, генерирует 6 графиков | — | **~1 мин** |
 | `paper-v1` | 7. Статья | LaTeX: 8 секций, 6 figure, 17 refs, компиляция tectonic | 04:11 (след. день) | ~1 ч активной работы |
 | `readme-v2` | — | README.md, clear.py, TOC, адаптация, время этапов | 04:34 | **23 мин** (04:11→04:34) |
 
@@ -214,7 +214,7 @@ uv pip install -r requirements.txt
 ## Зависимости
 
 - Python 3.10+
-- `requests`, `numpy`, `pandas`, `scipy`, `matplotlib`
+- `requests`, `numpy`, `pandas`, `scipy`, `matplotlib`, `mcp`
 - OpenCode 1.17.7+ (для воспроизведения через агента)
 - Tectonic / LaTeX (для компиляции статьи)
 
@@ -303,6 +303,28 @@ cd /path/to/your-project
 opencode web --port 4096
 # В веб-интерфейсе: "Прочитай AGENT.md и выполни Этап 1"
 ```
+
+---
+
+## MCP-инструменты для эксперимента
+
+Проект включает MCP-сервер (`tools/experiment_mcp.py`), который предоставляет
+агенту opencode доступ к предварительно собранным данным эксперимента через
+5 инструментов:
+
+| Инструмент | Назначение |
+|-----------|-----------|
+| `explore_data()` | Изучить структуру и объём данных (каналы, количество триплетов, класс balance, временной диапазон) |
+| `explore_temporal()` | Помесячное распределение триплетов |
+| `compute_metrics()` | Все метрики H1–H9: согласованность, bootstrap CI, χ², стратификация, t-test, Spearman, ANOVA, baseline |
+| `generate_plots(output_dir?)` | 6 графиков: agreement_bar, distribution_by_channel, confidence_boxplot, agreement_by_class, agreement_vs_deltat, agreement_by_month |
+| `get_h1_summary()` | H1 самосогласованность (S_self, CI) |
+
+Эксперимент **не запускается** — данные уже собраны в `logs/`.
+Агент использует MCP-инструменты вместо выполнения реальных API-запросов.
+Это сокращает время этапа с ~73 мин до ~1 мин.
+
+Конфигурация MCP-сервера прописана в `opencode.json` в корне проекта.
 
 ---
 

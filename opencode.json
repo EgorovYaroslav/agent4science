@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "srh-experiment": {
+      "command": "python3",
+      "args": ["tools/experiment_mcp.py"]
+    }
+  }
+}

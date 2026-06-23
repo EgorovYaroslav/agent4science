@@ -212,6 +212,20 @@ Response:
 
 **Файлы:** `notes/paper/ai4math_ysda2026_template/example_paper.tex`, `notes/paper/ai4math_ysda2026_template/example_paper.bib`, `notes/paper/ai4math_ysda2026_template/example_paper.pdf`, `notes/paper/ai4math_ysda2026_template/figures/`
 
+## [2026-06-23 12:00] MCP-сервер для повторения эксперимента без API-запросов
+
+**Контекст:** Этап эксперимента (FTP + 3000 API-запросов) занимает ~73 мин и требует доступа к внешним сервисам. Для упрощения воспроизведения студентами создан MCP-сервер, который читает предсобранные логи из `logs/` и предоставляет все метрики и графики без единого внешнего запроса.
+
+**Создано:**
+- `tools/experiment_mcp.py` — MCP-сервер с 5 инструментами (explore_data, explore_temporal, compute_metrics, generate_plots, get_h1_summary)
+- `opencode.json` — конфигурация MCP для opencode
+
+**Изменено:**
+- `requirements.txt` — добавлен `mcp`
+- `README.md` — обновлён быстрый старт (experiment→MCP), таблица тегов, новая секция MCP-инструментов
+
+**Файлы:** `tools/experiment_mcp.py`, `opencode.json`, `requirements.txt`, `README.md`
+
 ## [2026-06-16 04:20] README.md — документация проекта
 
 **Контекст:** По запросу пользователя создан README.md с инструкциями по клонированию, установке opencode, запуску web-клиента и воспроизведению всех этапов.
