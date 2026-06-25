@@ -4,7 +4,7 @@
     "srh-experiment": {
       "type": "local",
       "enabled": true,
-      "command": ["./Sci-Hub-MCP-Server/.venv/bin/python", "./tools/experiment_mcp.py"]
+      "command": [".venv/bin/python", "./tools/experiment_mcp.py"]
     }
   }
 }
